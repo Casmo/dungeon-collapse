@@ -30,8 +30,8 @@ class DungeonTile {
     }
     static random(): DungeonTile {
         var tile = new DungeonTile("basic");
-        tile.passable = Math.random() > 0.3;
-        if (Math.random() < 0.2) {
+        tile.passable = Math.random() > 0.2;
+        if (Math.random() < 0.3) {
             tile.addItem(new DungeonItem());
         }
         return tile;

@@ -3,6 +3,6 @@ class DungeonItem {
     name: string;
     effect: string;
     toString() {
-        return "@";
+        return "?";
     }
 }

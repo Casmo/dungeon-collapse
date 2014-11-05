@@ -26,6 +26,7 @@
     <TypeScriptCompile Include="Game\DungeonTile.ts" />
     <TypeScriptCompile Include="Game\Game.ts" />
     <TypeScriptCompile Include="Game\Dungeon.ts" />
+    <TypeScriptCompile Include="Game\Player.ts" />
     <TypeScriptCompile Include="Game\_reference.ts" />
   </ItemGroup>
   <ItemGroup>
