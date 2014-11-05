@@ -1,11 +1,16 @@
-﻿class Game {
+﻿/// <reference path="_reference.ts" />
+class Game {
     element: HTMLElement;
+    currentDungeon: Dungeon;
     constructor(element: HTMLElement) {
         this.element = element;
+        this.setup();
     }
-
+    setup() {
+        this.currentDungeon = new Dungeon(7,13);
+    }
     start() {
-       
+        this.element.innerHTML = this.currentDungeon.toString();
     }
 
     stop() {
