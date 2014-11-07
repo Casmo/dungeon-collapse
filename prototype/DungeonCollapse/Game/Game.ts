@@ -10,9 +10,10 @@ class Game {
     }
 
     setup() {
-        this.currentDungeon = new Dungeon(7, 13);
+        
         this.player1 = new Player(0,0,"1");
         this.player2 = new Player(0, 12, "2");
+        this.currentDungeon = new Dungeon(7, 13, this.player1, this.player2);
         this.currentPlayer = this.player1;
         var self = this;
         document.addEventListener('keydown', function (event) {
@@ -33,7 +34,7 @@ class Game {
         }
     }
     draw() {
-        this.element.innerHTML = this.currentDungeon.toString(this.player1, this.player2);
+        this.element.innerHTML = this.currentDungeon.toString(this.currentPlayer);
     }
     nextTurn() {
         this.currentPlayer = this.currentPlayer === this.player1 ? this.player2 : this.player1;

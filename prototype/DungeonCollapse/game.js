@@ -9,7 +9,11 @@ var DungeonItem = (function () {
 })();
 /// <reference path="_reference.ts" />
 var DungeonTile = (function () {
-    function DungeonTile(type) {
+    function DungeonTile(type, x, y) {
+        if (typeof x === "undefined") { x = -1; }
+        if (typeof y === "undefined") { y = -1; }
+        this.posX = x;
+        this.posY = y;
         this.invisible = false;
         this.type = type;
         this.items = new Array();
@@ -19,19 +23,16 @@ var DungeonTile = (function () {
     };
 
     DungeonTile.prototype.toString = function () {
-        if (this.invisible) {
-            return " ";
-        }
         if (!this.passable) {
-            return "#";
+            return "0";
         }
         if (this.items.length > 0) {
             return this.items[0].toString();
         }
         return ".";
     };
-    DungeonTile.random = function () {
-        var tile = new DungeonTile("basic");
+    DungeonTile.random = function (x, y) {
+        var tile = new DungeonTile("basic", x, y);
         tile.passable = Math.random() > 0.2;
         if (Math.random() < 0.3) {
             tile.addItem(new DungeonItem());
@@ -47,50 +48,75 @@ var Player = (function () {
         this.posY = startY;
         this.health = 100;
         this.view = view;
+        this.mappedTiles = new Array();
     }
+    Player.prototype.moveToTile = function (tile) {
+        this.posX = tile.posX;
+        this.posY = tile.posY;
+        this.mapTile(tile);
+    };
+    Player.prototype.mapTile = function (tile) {
+        if (this.mappedTiles.indexOf(tile) == -1) {
+            this.mappedTiles.push(tile);
+        }
+    };
+    Player.prototype.clearTile = function (tile) {
+        this.mapTile(tile);
+    };
     return Player;
 })();
 /// <reference path="_reference.ts" />
 var Dungeon = (function () {
-    function Dungeon(w, h) {
+    function Dungeon(w, h, p1, p2) {
         this.width = w;
         this.height = h;
+        this.player1 = p1;
+        this.player2 = p2;
+
         this.grid = new Array();
         for (var i = 0; i < this.width; i++) {
             this.grid[i] = new Array();
             for (var j = 0; j < this.height; j++) {
-                this.grid[i][j] = DungeonTile.random();
+                this.grid[i][j] = DungeonTile.random(i, j);
             }
         }
+        this.player1.clearTile(this.grid[this.player1.posX][this.player1.posY]);
+        this.player2.clearTile(this.grid[this.player2.posX][this.player2.posY]);
     }
     Dungeon.prototype.movePlayer = function (player, direction) {
         var targetX = player.posX + directions[direction].x;
         var targetY = player.posY + directions[direction].y;
         if (this.validPosition(targetX, targetY)) {
-            player.posX = targetX;
-            player.posY = targetY;
+            var tile = this.grid[targetX][targetY];
+            var otherPlayer = this.getOtherPlayer(player);
+            if (!tile.passable || (otherPlayer.posX == tile.posX && otherPlayer.posY == tile.posY)) {
+                player.clearTile(tile);
+            } else
+                player.moveToTile(tile);
         }
     };
-    Dungeon.prototype.validPosition = function (x, y, mustBePassable) {
-        if (typeof mustBePassable === "undefined") { mustBePassable = true; }
-        var safe = (x >= 0 && x < this.width && y >= 0 && y < this.height);
-        if (mustBePassable) {
-            return safe && this.grid[x][y].passable;
-        }
-        return safe;
+    Dungeon.prototype.validPosition = function (x, y) {
+        return (x >= 0 && x < this.width && y >= 0 && y < this.height);
     };
     Dungeon.prototype.handlePlayerAction = function (player, action, targetX, targetY) {
     };
-    Dungeon.prototype.toString = function (p1, p2) {
+    Dungeon.prototype.getOtherPlayer = function (player) {
+        return (player == this.player1) ? this.player1 : this.player2;
+    };
+    Dungeon.prototype.toString = function (player) {
         var str = "";
+        var otherPlayer = this.getOtherPlayer(player);
         for (var i = 0; i < this.width; i++) {
             for (var j = 0; j < this.height; j++) {
-                if (i == p1.posX && j == p1.posY) {
-                    str += p1.view;
-                } else if (i == p2.posX && j == p2.posY) {
-                    str += p2.view;
+                if (player.posX == i && player.posY == j) {
+                    str += player.view;
+                } else if (player.mappedTiles.indexOf(this.grid[i][j]) != -1) {
+                    if (otherPlayer.posX == i && otherPlayer.posY == j) {
+                        str += otherPlayer.view;
+                    } else
+                        str += this.grid[i][j].toString();
                 } else {
-                    str += this.grid[i][j].toString();
+                    str += "#";
                 }
             }
             str += "</br>";
@@ -105,9 +131,9 @@ var Game = (function () {
         this.element = element;
     }
     Game.prototype.setup = function () {
-        this.currentDungeon = new Dungeon(7, 13);
         this.player1 = new Player(0, 0, "1");
         this.player2 = new Player(0, 12, "2");
+        this.currentDungeon = new Dungeon(7, 13, this.player1, this.player2);
         this.currentPlayer = this.player1;
         var self = this;
         document.addEventListener('keydown', function (event) {
@@ -136,7 +162,7 @@ var Game = (function () {
         }
     };
     Game.prototype.draw = function () {
-        this.element.innerHTML = this.currentDungeon.toString(this.player1, this.player2);
+        this.element.innerHTML = this.currentDungeon.toString(this.currentPlayer);
     };
     Game.prototype.nextTurn = function () {
         this.currentPlayer = this.currentPlayer === this.player1 ? this.player2 : this.player1;

@@ -6,8 +6,12 @@ class DungeonTile {
     type: string;
     description: string;
     items: Array<DungeonItem>;
+    posX: number;
+    posY: number;
 
-    constructor(type: string) {
+    constructor(type: string, x: number=-1, y: number=-1) {
+        this.posX = x;
+        this.posY = y;
         this.invisible = false;
         this.type = type;
         this.items = new Array<DungeonItem>();
@@ -17,19 +21,16 @@ class DungeonTile {
     }
 
     toString() {
-        if (this.invisible) {
-            return " ";
-        }
         if (!this.passable) {
-            return "#";
+            return "0";
         }
         if (this.items.length > 0) {
             return this.items[0].toString();
         }
         return ".";
     }
-    static random(): DungeonTile {
-        var tile = new DungeonTile("basic");
+    static random(x:number,y:number): DungeonTile {
+        var tile = new DungeonTile("basic",x,y);
         tile.passable = Math.random() > 0.2;
         if (Math.random() < 0.3) {
             tile.addItem(new DungeonItem());
