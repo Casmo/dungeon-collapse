@@ -5,4 +5,10 @@ class DungeonItem {
     toString() {
         return "?";
     }
+    clone(): DungeonItem{
+        var di: DungeonItem = new DungeonItem();
+        di.name = this.name;
+        di.effect = this.effect;
+        return di;
+    }
 }
