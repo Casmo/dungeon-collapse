@@ -72,8 +72,13 @@ var Player = (function () {
         this.currentCharacter = this.characters[0];
     }
     Player.prototype.nextTurn = function () {
-        var i = this.characters.indexOf(this.currentCharacter);
-        this.currentCharacter = this.characters[(i + 1) % this.characters.length];
+        if (this.currentCharacter.actionsLeft == 0) {
+            this.currentCharacter.actionsLeft = 2;
+            var i = this.characters.indexOf(this.currentCharacter);
+            this.currentCharacter = this.characters[(i + 1) % this.characters.length];
+            return true;
+        } else
+            return false;
     };
     Player.prototype.setupCharacters = function (side, map) {
         for (var i = 0; i < this.characters.length; i++) {
@@ -110,8 +115,10 @@ var Dungeon = (function () {
         }
     }
     Dungeon.prototype.nextTurn = function () {
-        this.cp = this.cp === this.p1 ? this.p2 : this.p1;
-        this.cp.nextTurn();
+        var characterDone = this.cp.nextTurn();
+        if (characterDone) {
+            this.cp = this.cp === this.p1 ? this.p2 : this.p1;
+        }
     };
     Dungeon.prototype.handleInput = function (input) {
         if (!isNaN(parseFloat(input)) && isFinite(input)) {
@@ -134,6 +141,7 @@ var Dungeon = (function () {
             } else {
                 this.cp.mapTile(tile);
             }
+            this.cp.currentCharacter.actionsLeft--;
         }
     };
     Dungeon.prototype.moveCharacterToTile = function (ch, tile) {
@@ -168,8 +176,8 @@ var Game = (function () {
         this.element = element;
     }
     Game.prototype.setup = function () {
-        this.player1 = new Player("ab"); //0,0,"1");
-        this.player2 = new Player("12"); //0, 12, "2");
+        this.player1 = new Player("ab");
+        this.player2 = new Player("12");
         var map = new DungeonBuilder(18, 7, this.player1, this.player2).build();
         this.currentDungeon = new Dungeon(this.player1, this.player2, map);
         this.currentPlayer = this.player1;
@@ -245,6 +253,7 @@ var Character = (function () {
     function Character(view) {
         this.health = 100;
         this.view = view;
+        this.actionsLeft = 2;
     }
     Character.prototype.setPos = function (x, y) {
         this.posX = x;

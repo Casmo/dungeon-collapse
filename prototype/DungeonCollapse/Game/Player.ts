@@ -13,8 +13,14 @@ class Player {
         this.currentCharacter = this.characters[0];
     }
     nextTurn() {
-        var i = this.characters.indexOf(this.currentCharacter);
-        this.currentCharacter = this.characters[(i+1) % this.characters.length];
+        if (this.currentCharacter.actionsLeft == 0) {
+            this.currentCharacter.actionsLeft = 2;
+            var i = this.characters.indexOf(this.currentCharacter);
+            this.currentCharacter = this.characters[(i + 1) % this.characters.length];
+            return true;
+        }
+        else
+            return false;
     }
     setupCharacters(side: string, map: Grid<DungeonTile>) {
         for (var i = 0; i < this.characters.length; i++) {

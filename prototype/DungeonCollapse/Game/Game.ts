@@ -10,8 +10,8 @@ class Game {
     }
 
     setup() {        
-        this.player1 = new Player("ab");//0,0,"1");
-        this.player2 = new Player("12");//0, 12, "2");
+        this.player1 = new Player("ab");
+        this.player2 = new Player("12");
         var map = new DungeonBuilder(18, 7, this.player1, this.player2).build();
         this.currentDungeon = new Dungeon(this.player1, this.player2,map);
         this.currentPlayer = this.player1;

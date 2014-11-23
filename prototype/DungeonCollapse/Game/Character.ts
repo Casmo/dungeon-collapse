@@ -4,10 +4,11 @@ class Character {
     health: number;
     posX: number;
     posY: number;
-
+    actionsLeft: number;
     constructor(view: string) {
         this.health = 100;
-        this.view = view;        
+        this.view = view; 
+        this.actionsLeft = 2;       
     }
     setPos(x: number, y: number) {
         this.posX = x;

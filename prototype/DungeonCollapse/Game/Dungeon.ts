@@ -20,8 +20,10 @@ class Dungeon {
 
     }
     nextTurn() {
-        this.cp = this.cp === this.p1 ? this.p2 : this.p1;
-        this.cp.nextTurn();
+        var characterDone = this.cp.nextTurn();
+        if (characterDone) {
+            this.cp = this.cp === this.p1 ? this.p2 : this.p1;
+        }        
     }
     handleInput(input) {
         if (!isNaN(parseFloat(input)) && isFinite(input)) {
@@ -46,7 +48,8 @@ class Dungeon {
             }
             else {
                 this.cp.mapTile(tile);
-            }            
+            } 
+            this.cp.currentCharacter.actionsLeft--;           
         }
     }
     moveCharacterToTile(ch: Character, tile: DungeonTile) {
