@@ -33,6 +33,11 @@ var DungeonTile = (function () {
         }
         return cl;
     };
+    DungeonTile.prototype.setupForCharacter = function (ch) {
+        this.character = ch;
+        this.passable = true;
+        this.items = new Array();
+    };
     DungeonTile.prototype.addItem = function (item) {
         this.items.push(item);
     };
@@ -71,28 +76,30 @@ var Player = (function () {
         this.characters.push(new Character(charViews.charAt(1)));
         this.currentCharacter = this.characters[0];
     }
-    Player.prototype.nextTurn = function () {
-        if (this.currentCharacter.actionsLeft == 0) {
-            this.currentCharacter.actionsLeft = 2;
-            var i = this.characters.indexOf(this.currentCharacter);
-            this.currentCharacter = this.characters[(i + 1) % this.characters.length];
-            return true;
-        } else
-            return false;
+    Player.prototype.nextCharacter = function () {
+        var i = this.characters.indexOf(this.currentCharacter);
+        this.currentCharacter = this.characters[(i + 1) % this.characters.length];
     };
     Player.prototype.setupCharacters = function (side, map) {
         for (var i = 0; i < this.characters.length; i++) {
+            //put characters under each other on the given side of the room
             this.characters[i].posY = i;
             if (side == "left") {
                 this.characters[i].posX = 0;
             } else {
                 this.characters[i].posX = map.Width - 1;
             }
-            map.Get(this.characters[i].posX, this.characters[i].posY).character = this.characters[i];
+
+            //put characters on tile and map the tile
+            var tile = map.Get(this.characters[i].posX, this.characters[i].posY);
+            tile.setupForCharacter(this.characters[i]);
+            this.mappedTiles.push(tile);
         }
     };
+
     Player.prototype.mapTile = function (tile) {
         if (this.mappedTiles.indexOf(tile) == -1) {
+            this.currentCharacter.mapTile(tile);
             this.mappedTiles.push(tile);
         }
     };
@@ -105,26 +112,32 @@ var Dungeon = (function () {
         this.p2 = p2;
         this.cp = p1;
         this.map = map;
+
+        //setup characters on each side of the map
         this.p1.setupCharacters("left", this.map);
         this.p2.setupCharacters("right", this.map);
-        for (var i = 0; i < this.p1.characters.length; i++) {
-            var pc1 = this.p1.characters[i];
-            var pc2 = this.p2.characters[i];
-            this.p1.mapTile(this.map.Get(pc1.posX, pc1.posY));
-            this.p2.mapTile(this.map.Get(pc2.posX, pc2.posY));
-        }
     }
     Dungeon.prototype.nextTurn = function () {
-        var characterDone = this.cp.nextTurn();
-        if (characterDone) {
+        if (this.cp.currentCharacter.actionsLeft <= 0) {
+            log.write("next turn");
+            this.cp.currentCharacter.onTurnEnd();
+
+            //change current player
             this.cp = this.cp === this.p1 ? this.p2 : this.p1;
+
+            //change that player's character
+            this.cp.nextCharacter();
+            this.cp.currentCharacter.onTurnStart();
         }
     };
     Dungeon.prototype.handleInput = function (input) {
-        if (!isNaN(parseFloat(input)) && isFinite(input)) {
-            //its a direction
+        if (!isNaN(parseFloat(input)) && isFinite(input) && input >= 0) {
+            //its a number, so a direction
             this.moveCharacter(this.cp.currentCharacter, input);
+            this.nextTurn();
         } else {
+            this.cp.currentCharacter.wait();
+            this.nextTurn();
             //its something else
         }
     };
@@ -134,21 +147,22 @@ var Dungeon = (function () {
         var targetY = character.posY + directions[direction].y;
 
         if (this.map.Inside(targetX, targetY)) {
-            console.log(character.view, character.posX, character.posY, targetX, targetY, this.map.Get(targetX, targetY).posX, this.map.Get(targetX, targetY).posY);
             var tile = this.map.Get(targetX, targetY);
-            if (tile.canEnter()) {
-                this.moveCharacterToTile(character, tile);
-            } else {
+
+            if (this.cp.mappedTiles.indexOf(tile) == -1) {
                 this.cp.mapTile(tile);
+            } else {
+                if (tile.canEnter()) {
+                    this.moveCharacterToTile(character, tile);
+                }
             }
-            this.cp.currentCharacter.actionsLeft--;
         }
     };
     Dungeon.prototype.moveCharacterToTile = function (ch, tile) {
+        //move character and change the map accordingly
         this.map.Get(ch.posX, ch.posY).character = null;
         ch.moveToTile(tile);
         tile.character = ch;
-        this.cp.mapTile(tile);
     };
 
     Dungeon.prototype.handlePlayerAction = function (player, action, targetX, targetY) {
@@ -202,20 +216,11 @@ var Game = (function () {
                 direction = 3;
                 break;
         }
-        if (direction >= 0) {
-            this.currentDungeon.handleInput(direction);
-            this.nextTurn();
-        } else {
-            this.nextTurn();
-        }
+        this.currentDungeon.handleInput(direction);
+        this.draw();
     };
     Game.prototype.draw = function () {
         this.element.innerHTML = this.currentDungeon.toString(this.currentDungeon.cp.mappedTiles);
-    };
-
-    Game.prototype.nextTurn = function () {
-        this.currentDungeon.nextTurn();
-        this.draw();
     };
     Game.prototype.start = function () {
         this.setup();
@@ -228,6 +233,7 @@ var Game = (function () {
 })();
 
 var game;
+var log;
 var Direction;
 (function (Direction) {
     Direction[Direction["LEFT"] = 0] = "LEFT";
@@ -239,8 +245,8 @@ var Direction;
 var directions = [{ x: -1, y: 0 }, { x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }];
 
 window.onload = function () {
-    var el = document.getElementById('content');
-    game = new Game(el);
+    game = new Game(document.getElementById('content'));
+    log = new Log(document.getElementById('devlog'));
     game.start();
 };
 /// <reference path="dungeonitem.ts" />
@@ -260,7 +266,22 @@ var Character = (function () {
         this.posY = y;
     };
     Character.prototype.moveToTile = function (tile) {
+        log.write(this.view + " moved to " + tile.posX + "," + tile.posY);
+        this.actionsLeft--;
         this.setPos(tile.posX, tile.posY);
+    };
+    Character.prototype.mapTile = function (tile) {
+        log.write(this.view + " mapped " + tile.posX + "," + tile.posY + " : " + tile.toString());
+        this.actionsLeft--;
+    };
+    Character.prototype.onTurnStart = function () {
+        this.actionsLeft = 2;
+    };
+    Character.prototype.onTurnEnd = function () {
+    };
+    Character.prototype.wait = function () {
+        log.write(this.view + " waited");
+        this.actionsLeft--;
     };
     return Character;
 })();
@@ -367,5 +388,19 @@ var Grid = (function () {
         }
     };
     return Grid;
+})();
+var Log = (function () {
+    function Log(elem) {
+        this.entries = new Array();
+        this.html = elem;
+    }
+    Log.prototype.write = function (txt) {
+        this.entries.push(txt);
+        this.update(txt);
+    };
+    Log.prototype.update = function (txt) {
+        this.html.innerHTML += txt + '</br>';
+    };
+    return Log;
 })();
 //# sourceMappingURL=game.js.map

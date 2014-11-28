@@ -25,6 +25,11 @@ class DungeonTile {
         }
         return cl;
     }
+    setupForCharacter(ch: Character) {
+        this.character = ch;
+        this.passable = true;
+        this.items = new Array<DungeonItem>();
+    }
     addItem(item: DungeonItem) {
         this.items.push(item);
     }

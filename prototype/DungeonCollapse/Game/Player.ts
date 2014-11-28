@@ -12,18 +12,13 @@ class Player {
         this.characters.push(new Character(charViews.charAt(1)));
         this.currentCharacter = this.characters[0];
     }
-    nextTurn() {
-        if (this.currentCharacter.actionsLeft == 0) {
-            this.currentCharacter.actionsLeft = 2;
-            var i = this.characters.indexOf(this.currentCharacter);
-            this.currentCharacter = this.characters[(i + 1) % this.characters.length];
-            return true;
-        }
-        else
-            return false;
+    nextCharacter() { 
+        var i = this.characters.indexOf(this.currentCharacter);
+        this.currentCharacter = this.characters[(i + 1) % this.characters.length];
     }
     setupCharacters(side: string, map: Grid<DungeonTile>) {
         for (var i = 0; i < this.characters.length; i++) {
+            //put characters under each other on the given side of the room
             this.characters[i].posY = i;
             if (side == "left") {
                 this.characters[i].posX = 0;
@@ -31,12 +26,16 @@ class Player {
             else {
                 this.characters[i].posX = map.Width-1;
             }
-            map.Get(this.characters[i].posX, this.characters[i].posY).character = this.characters[i];
-
+            //put characters on tile and map the tile
+            var tile = map.Get(this.characters[i].posX, this.characters[i].posY);
+            tile.setupForCharacter(this.characters[i]);
+            this.mappedTiles.push(tile);
         }
     }
+
     mapTile(tile: DungeonTile) {
         if (this.mappedTiles.indexOf(tile) == -1) {
+            this.currentCharacter.mapTile(tile);
             this.mappedTiles.push(tile);
         }
     }

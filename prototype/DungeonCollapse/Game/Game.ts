@@ -28,21 +28,11 @@ class Game {
             case 39: direction = 2; break;
             case 40: direction = 3; break;
         }
-        if (direction >= 0) {
-            this.currentDungeon.handleInput(direction);
-            this.nextTurn();
-        }
-        else {
-            this.nextTurn();
-        }
+        this.currentDungeon.handleInput(direction);
+        this.draw();
     }
     draw() {
         this.element.innerHTML = this.currentDungeon.toString(this.currentDungeon.cp.mappedTiles);
-    }
-
-    nextTurn() {
-        this.currentDungeon.nextTurn();
-        this.draw();
     }
     start() {
         this.setup();
@@ -55,11 +45,13 @@ class Game {
 }
 
 var game: Game;
+var log: Log;
 enum Direction {LEFT, UP, RIGHT, DOWN };
 var directions = [{ x: -1, y: 0 },{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }];
 
 window.onload = () => {
-    var el = document.getElementById('content');
-    game = new Game(el);
+    game = new Game(document.getElementById('content'));
+    log = new Log(document.getElementById('devlog'));  
     game.start();
+  
 };

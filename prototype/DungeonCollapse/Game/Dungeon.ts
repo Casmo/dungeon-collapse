@@ -3,36 +3,38 @@ class Dungeon {
     p1: Player;
     p2: Player;
     map: Grid<DungeonTile>;
-    cp: Player;
+    cp: Player; //currentPlayer
     constructor(p1:Player,p2:Player,map:Grid<DungeonTile>) {
         this.p1 = p1;
         this.p2 = p2;
         this.cp = p1;
         this.map = map;
+        //setup characters on each side of the map
         this.p1.setupCharacters("left", this.map);
         this.p2.setupCharacters("right", this.map);
-        for (var i = 0; i < this.p1.characters.length; i++) {
-            var pc1 = this.p1.characters[i];
-            var pc2 = this.p2.characters[i];
-            this.p1.mapTile(this.map.Get(pc1.posX, pc1.posY));
-            this.p2.mapTile(this.map.Get(pc2.posX, pc2.posY));
-        }
-
     }
-    nextTurn() {
-        var characterDone = this.cp.nextTurn();
-        if (characterDone) {
+    nextTurn() {        
+        if (this.cp.currentCharacter.actionsLeft <= 0) {
+            log.write("next turn");
+            this.cp.currentCharacter.onTurnEnd();
+            //change current player
             this.cp = this.cp === this.p1 ? this.p2 : this.p1;
+            //change that player's character
+            this.cp.nextCharacter();
+            this.cp.currentCharacter.onTurnStart();
         }        
     }
     handleInput(input) {
-        if (!isNaN(parseFloat(input)) && isFinite(input)) {
-            //its a direction
+        if (!isNaN(parseFloat(input)) && isFinite(input) && input >=0) {
+            //its a number, so a direction
             this.moveCharacter(this.cp.currentCharacter, input);
+            this.nextTurn();
         }
         else {
-            //its something else
+            this.cp.currentCharacter.wait();
+            this.nextTurn();
 
+            //its something else
         }
     }
 
@@ -41,23 +43,23 @@ class Dungeon {
         var targetY = character.posY + directions[direction].y; 
         
         if (this.map.Inside(targetX, targetY)) {
-            console.log(character.view, character.posX, character.posY, targetX, targetY, this.map.Get(targetX, targetY).posX, this.map.Get(targetX, targetY).posY);               
             var tile = this.map.Get(targetX, targetY);
-            if (tile.canEnter()) {
-                this.moveCharacterToTile(character, tile);
+
+            if (this.cp.mappedTiles.indexOf(tile) == -1) {
+                this.cp.mapTile(tile);
             }
             else {
-                this.cp.mapTile(tile);
-            } 
-            this.cp.currentCharacter.actionsLeft--;           
+                if (tile.canEnter()) {
+                    this.moveCharacterToTile(character, tile);
+                }
+            }              
         }
     }
     moveCharacterToTile(ch: Character, tile: DungeonTile) {
-        
+        //move character and change the map accordingly
         this.map.Get(ch.posX, ch.posY).character = null;
         ch.moveToTile(tile);
-        tile.character = ch;        
-        this.cp.mapTile(tile);
+        tile.character = ch;              
     }
 
     handlePlayerAction(player: Player, action: string, targetX: number, targetY: number) {
