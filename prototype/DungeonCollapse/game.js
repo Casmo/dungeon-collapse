@@ -1,9 +1,16 @@
 ﻿/// <reference path="_reference.ts" />
 var DungeonItem = (function () {
     function DungeonItem() {
+        this.gold = 1 + Math.round(Math.random() * 5);
     }
     DungeonItem.prototype.toString = function () {
         return "?";
+    };
+    DungeonItem.prototype.onPickup = function () {
+        log.write(game.currentPlayer.currentCharacter.name + " picked up " + this.gold + " gold");
+        game.currentPlayer.gold += this.gold;
+    };
+    DungeonItem.prototype.onUse = function () {
     };
     DungeonItem.prototype.clone = function () {
         var di = new DungeonItem();
@@ -75,6 +82,7 @@ var Player = (function () {
         this.characters.push(new Character(charViews.charAt(0)));
         this.characters.push(new Character(charViews.charAt(1)));
         this.currentCharacter = this.characters[0];
+        this.gold = 0;
     }
     Player.prototype.nextCharacter = function () {
         var i = this.characters.indexOf(this.currentCharacter);
@@ -259,7 +267,9 @@ var Character = (function () {
     function Character(view) {
         this.health = 100;
         this.view = view;
+        this.name = this.view;
         this.actionsLeft = 2;
+        this.items = new Array();
     }
     Character.prototype.setPos = function (x, y) {
         this.posX = x;
@@ -269,6 +279,13 @@ var Character = (function () {
         log.write(this.view + " moved to " + tile.posX + "," + tile.posY);
         this.actionsLeft--;
         this.setPos(tile.posX, tile.posY);
+
+        for (var i = 0; i < tile.items.length; i++) {
+            var item = tile.items[i];
+            item.onPickup();
+            this.items.push(item);
+        }
+        tile.items = new Array();
     };
     Character.prototype.mapTile = function (tile) {
         log.write(this.view + " mapped " + tile.posX + "," + tile.posY + " : " + tile.toString());

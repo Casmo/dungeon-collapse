@@ -4,6 +4,7 @@ class Player {
     mappedTiles: Array<DungeonTile>;
     currentCharacter: Character;
     name: string;
+    gold: number;
     constructor(charViews: string) {
         this.name = charViews;
         this.mappedTiles = new Array<DungeonTile>();
@@ -11,6 +12,7 @@ class Player {
         this.characters.push(new Character(charViews.charAt(0)));
         this.characters.push(new Character(charViews.charAt(1)));
         this.currentCharacter = this.characters[0];
+        this.gold = 0;
     }
     nextCharacter() { 
         var i = this.characters.indexOf(this.currentCharacter);
