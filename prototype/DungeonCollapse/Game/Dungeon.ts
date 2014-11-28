@@ -48,11 +48,28 @@ class Dungeon {
             if (this.cp.mappedTiles.indexOf(tile) == -1) {
                 this.cp.mapTile(tile);
             }
-            else {
-                if (tile.canEnter()) {
-                    this.moveCharacterToTile(character, tile);
+            else if (tile.character != null) {
+                if (tile.character.type == 'enemy') {
+
+                    //combat!!!
+
+                    var enemy = <Enemy>tile.character;
+                    enemy.health -= character.strength;
+                    log.write(character.name + " hits " + enemy.name + " for " + character.strength);
+                    character.actionsLeft--;
+                    if (enemy.health <= 0) {
+                        tile.character = null;
+                    }
+                    else {
+                        character.health -= enemy.strength;
+                        log.write(enemy.name + " hits " + character.name + " for " + enemy.strength);
+                    }
                 }
-            }              
+
+            }
+            else if (tile.passable) {
+                this.moveCharacterToTile(character, tile);
+            }             
         }
     }
     moveCharacterToTile(ch: PlayerCharacter, tile: DungeonTile) {

@@ -59,7 +59,7 @@ class DungeonTile {
         if (Math.random() < 0.3) {
             tile.addItem(new DungeonItem());
         }
-        else if (Math.random() < 0.9) {
+        else if (Math.random() < 0.2) {
             tile.character = new Enemy("V");
         }
         return tile;

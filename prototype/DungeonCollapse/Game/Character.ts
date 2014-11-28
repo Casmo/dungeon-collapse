@@ -3,10 +3,13 @@ class Character {
     view: string;
     name: string;
     health: number;
+    strength: number;
     posX: number;
     posY: number;
+    type: string;
     constructor(view: string) {
-        this.health = 100;
+        this.health = 40;
+        this.strength = 5;
         this.view = view; 
         this.name = this.view;    
     }

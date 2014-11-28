@@ -73,7 +73,7 @@ var DungeonTile = (function () {
         tile.passable = Math.random() > 0.1;
         if (Math.random() < 0.3) {
             tile.addItem(new DungeonItem());
-        } else if (Math.random() < 0.9) {
+        } else if (Math.random() < 0.2) {
             tile.character = new Enemy("V");
         }
         return tile;
@@ -166,10 +166,22 @@ var Dungeon = (function () {
 
             if (this.cp.mappedTiles.indexOf(tile) == -1) {
                 this.cp.mapTile(tile);
-            } else {
-                if (tile.canEnter()) {
-                    this.moveCharacterToTile(character, tile);
+            } else if (tile.character != null) {
+                if (tile.character.type == 'enemy') {
+                    //combat!!!
+                    var enemy = tile.character;
+                    enemy.health -= character.strength;
+                    log.write(character.name + " hits " + enemy.name + " for " + character.strength);
+                    character.actionsLeft--;
+                    if (enemy.health <= 0) {
+                        tile.character = null;
+                    } else {
+                        character.health -= enemy.strength;
+                        log.write(enemy.name + " hits " + character.name + " for " + enemy.strength);
+                    }
                 }
+            } else if (tile.passable) {
+                this.moveCharacterToTile(character, tile);
             }
         }
     };
@@ -272,7 +284,8 @@ window.onload = function () {
 /// <reference path="_reference.ts" />
 var Character = (function () {
     function Character(view) {
-        this.health = 100;
+        this.health = 40;
+        this.strength = 5;
         this.view = view;
         this.name = this.view;
     }
@@ -312,6 +325,7 @@ var __extends = this.__extends || function (d, b) {
 var Enemy = (function (_super) {
     __extends(Enemy, _super);
     function Enemy(view) {
+        this.type = "enemy";
         _super.call(this, view);
     }
     Enemy.prototype.clone = function () {
@@ -425,8 +439,11 @@ var PlayerCharacter = (function (_super) {
     __extends(PlayerCharacter, _super);
     function PlayerCharacter(view) {
         _super.call(this, view);
+        this.type = 'pc';
         this.actionsLeft = 2;
         this.items = new Array();
+        this.strength = 10;
+        this.health = 100;
     }
     PlayerCharacter.prototype.moveToTile = function (tile) {
         log.write(this.view + " moved to " + tile.posX + "," + tile.posY);

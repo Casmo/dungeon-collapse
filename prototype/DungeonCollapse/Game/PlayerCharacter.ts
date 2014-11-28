@@ -3,8 +3,11 @@
     items: Array<DungeonItem>;
     constructor(view: string) {
         super(view);
+        this.type = 'pc';
         this.actionsLeft = 2;
         this.items = new Array<DungeonItem>();
+        this.strength = 10;
+        this.health = 100;
     }
     moveToTile(tile: DungeonTile) {
         log.write(this.view + " moved to " + tile.posX + "," + tile.posY);

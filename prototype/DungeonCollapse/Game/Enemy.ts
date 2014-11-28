@@ -1,6 +1,6 @@
 ﻿class Enemy extends Character{
-    strength: number;
     constructor(view: string) {
+        this.type="enemy";
         super(view);
     }
     clone() {
