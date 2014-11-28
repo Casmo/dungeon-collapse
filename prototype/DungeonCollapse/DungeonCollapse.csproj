@@ -26,11 +26,13 @@
     <TypeScriptCompile Include="Game\DungeonBuilder.ts" />
     <TypeScriptCompile Include="Game\DungeonItem.ts" />
     <TypeScriptCompile Include="Game\DungeonTile.ts" />
+    <TypeScriptCompile Include="Game\Enemy.ts" />
     <TypeScriptCompile Include="Game\Game.ts" />
     <TypeScriptCompile Include="Game\Dungeon.ts" />
     <TypeScriptCompile Include="Game\Grid.ts" />
     <TypeScriptCompile Include="Game\Log.ts" />
     <TypeScriptCompile Include="Game\Player.ts" />
+    <TypeScriptCompile Include="Game\PlayerCharacter.ts" />
     <TypeScriptCompile Include="Game\_reference.ts" />
   </ItemGroup>
   <ItemGroup>

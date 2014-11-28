@@ -23,6 +23,11 @@ class DungeonTile {
         for (var i = 0; i < this.items.length; i++) {
             cl.addItem(this.items[i].clone());
         }
+        if (this.character != null) {
+            var enemy: Enemy = <Enemy>(this.character);
+            cl.character = enemy.clone();
+        }
+
         return cl;
     }
     setupForCharacter(ch: Character) {
@@ -53,6 +58,9 @@ class DungeonTile {
         tile.passable = Math.random() > 0.1;
         if (Math.random() < 0.3) {
             tile.addItem(new DungeonItem());
+        }
+        else if (Math.random() < 0.9) {
+            tile.character = new Enemy("V");
         }
         return tile;
     }

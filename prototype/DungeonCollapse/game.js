@@ -38,6 +38,11 @@ var DungeonTile = (function () {
         for (var i = 0; i < this.items.length; i++) {
             cl.addItem(this.items[i].clone());
         }
+        if (this.character != null) {
+            var enemy = (this.character);
+            cl.character = enemy.clone();
+        }
+
         return cl;
     };
     DungeonTile.prototype.setupForCharacter = function (ch) {
@@ -68,6 +73,8 @@ var DungeonTile = (function () {
         tile.passable = Math.random() > 0.1;
         if (Math.random() < 0.3) {
             tile.addItem(new DungeonItem());
+        } else if (Math.random() < 0.9) {
+            tile.character = new Enemy("V");
         }
         return tile;
     };
@@ -79,8 +86,8 @@ var Player = (function () {
         this.name = charViews;
         this.mappedTiles = new Array();
         this.characters = new Array();
-        this.characters.push(new Character(charViews.charAt(0)));
-        this.characters.push(new Character(charViews.charAt(1)));
+        this.characters.push(new PlayerCharacter(charViews.charAt(0)));
+        this.characters.push(new PlayerCharacter(charViews.charAt(1)));
         this.currentCharacter = this.characters[0];
         this.gold = 0;
     }
@@ -268,37 +275,10 @@ var Character = (function () {
         this.health = 100;
         this.view = view;
         this.name = this.view;
-        this.actionsLeft = 2;
-        this.items = new Array();
     }
     Character.prototype.setPos = function (x, y) {
         this.posX = x;
         this.posY = y;
-    };
-    Character.prototype.moveToTile = function (tile) {
-        log.write(this.view + " moved to " + tile.posX + "," + tile.posY);
-        this.actionsLeft--;
-        this.setPos(tile.posX, tile.posY);
-
-        for (var i = 0; i < tile.items.length; i++) {
-            var item = tile.items[i];
-            item.onPickup();
-            this.items.push(item);
-        }
-        tile.items = new Array();
-    };
-    Character.prototype.mapTile = function (tile) {
-        log.write(this.view + " mapped " + tile.posX + "," + tile.posY + " : " + tile.toString());
-        this.actionsLeft--;
-    };
-    Character.prototype.onTurnStart = function () {
-        this.actionsLeft = 2;
-    };
-    Character.prototype.onTurnEnd = function () {
-    };
-    Character.prototype.wait = function () {
-        log.write(this.view + " waited");
-        this.actionsLeft--;
     };
     return Character;
 })();
@@ -323,6 +303,27 @@ var DungeonBuilder = (function () {
     };
     return DungeonBuilder;
 })();
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var Enemy = (function (_super) {
+    __extends(Enemy, _super);
+    function Enemy(view) {
+        _super.call(this, view);
+    }
+    Enemy.prototype.clone = function () {
+        var c = new Enemy(this.view);
+        c.health = this.health;
+        c.setPos(this.posX, this.posY);
+        c.name = this.name;
+        c.strength = this.strength;
+        return c;
+    };
+    return Enemy;
+})(Character);
 var Grid = (function () {
     function Grid(w, h) {
         this.Width = w;
@@ -420,4 +421,38 @@ var Log = (function () {
     };
     return Log;
 })();
+var PlayerCharacter = (function (_super) {
+    __extends(PlayerCharacter, _super);
+    function PlayerCharacter(view) {
+        _super.call(this, view);
+        this.actionsLeft = 2;
+        this.items = new Array();
+    }
+    PlayerCharacter.prototype.moveToTile = function (tile) {
+        log.write(this.view + " moved to " + tile.posX + "," + tile.posY);
+        this.actionsLeft--;
+        this.setPos(tile.posX, tile.posY);
+
+        for (var i = 0; i < tile.items.length; i++) {
+            var item = tile.items[i];
+            item.onPickup();
+            this.items.push(item);
+        }
+        tile.items = new Array();
+    };
+    PlayerCharacter.prototype.mapTile = function (tile) {
+        log.write(this.view + " mapped " + tile.posX + "," + tile.posY + " : " + tile.toString());
+        this.actionsLeft--;
+    };
+    PlayerCharacter.prototype.onTurnStart = function () {
+        this.actionsLeft = 2;
+    };
+    PlayerCharacter.prototype.onTurnEnd = function () {
+    };
+    PlayerCharacter.prototype.wait = function () {
+        log.write(this.view + " waited");
+        this.actionsLeft--;
+    };
+    return PlayerCharacter;
+})(Character);
 //# sourceMappingURL=game.js.map

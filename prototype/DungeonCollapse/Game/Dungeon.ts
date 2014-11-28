@@ -38,7 +38,7 @@ class Dungeon {
         }
     }
 
-    moveCharacter(character: Character, direction: number) {       
+    moveCharacter(character: PlayerCharacter, direction: number) {       
         var targetX = character.posX + directions[direction].x;
         var targetY = character.posY + directions[direction].y; 
         
@@ -55,7 +55,7 @@ class Dungeon {
             }              
         }
     }
-    moveCharacterToTile(ch: Character, tile: DungeonTile) {
+    moveCharacterToTile(ch: PlayerCharacter, tile: DungeonTile) {
         //move character and change the map accordingly
         this.map.Get(ch.posX, ch.posY).character = null;
         ch.moveToTile(tile);

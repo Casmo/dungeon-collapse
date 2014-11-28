@@ -1,16 +1,16 @@
 ﻿/// <reference path="_reference.ts" />
 class Player {
-    characters: Array<Character>;  
+    characters: Array<PlayerCharacter>;  
     mappedTiles: Array<DungeonTile>;
-    currentCharacter: Character;
+    currentCharacter: PlayerCharacter;
     name: string;
     gold: number;
     constructor(charViews: string) {
         this.name = charViews;
         this.mappedTiles = new Array<DungeonTile>();
-        this.characters = new Array<Character>();
-        this.characters.push(new Character(charViews.charAt(0)));
-        this.characters.push(new Character(charViews.charAt(1)));
+        this.characters = new Array<PlayerCharacter>();
+        this.characters.push(new PlayerCharacter(charViews.charAt(0)));
+        this.characters.push(new PlayerCharacter(charViews.charAt(1)));
         this.currentCharacter = this.characters[0];
         this.gold = 0;
     }
