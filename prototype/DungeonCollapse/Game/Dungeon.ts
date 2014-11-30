@@ -49,21 +49,25 @@ class Dungeon {
                 this.cp.mapTile(tile);
             }
             else if (tile.character != null) {
+                // Combat!!!
+
                 if (tile.character.type == 'enemy') {
-
-                    //combat!!!
-
                     var enemy = <Enemy>tile.character;
-                    enemy.health -= character.strength;
-                    log.write(character.name + " hits " + enemy.name + " for " + character.strength);
-                    character.actionsLeft--;
+                    character.attackEnemy(enemy);
                     if (enemy.health <= 0) {
+                        enemy.onDeath();
                         tile.character = null;
                     }
                     else {
-                        character.health -= enemy.strength;
-                        log.write(enemy.name + " hits " + character.name + " for " + enemy.strength);
+                        enemy.attackPC(character);
                     }
+                }
+                else if (tile.character.type == 'pc') {
+                    var other = <PlayerCharacter>tile.character;
+                    character.attackOpponent(other);
+                    if (other.health > 0) {
+                        other.attackOpponent(character);
+                    }                    
                 }
 
             }

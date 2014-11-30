@@ -21,6 +21,18 @@
         }
         tile.items = new Array<DungeonItem>();
     }
+    attackEnemy(enemy: Enemy) {
+        enemy.health -= this.strength;
+        //apply effects
+        this.actionsLeft--;
+        log.write(this.name + " hits " + enemy.name + " for " + this.strength);
+    }
+    attackOpponent(opp: PlayerCharacter) {
+        opp.health -= this.strength;
+        //apply effects
+        this.actionsLeft--;
+        log.write(this.name + " hits " + opp.name + " for " + this.strength);
+    }
     mapTile(tile: DungeonTile) {
         log.write(this.view + " mapped " + tile.posX + "," + tile.posY + " : " + tile.toString());
         this.actionsLeft--;
@@ -29,6 +41,8 @@
         this.actionsLeft = 2;
     }
     onTurnEnd() {
+    }
+    onDefend() {
     }
     wait() {
         log.write(this.view + " waited");

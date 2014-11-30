@@ -17,5 +17,4 @@ class Character {
         this.posX = x;
         this.posY = y;
     }
-
 } 

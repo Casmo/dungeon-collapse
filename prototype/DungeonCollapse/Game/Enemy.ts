@@ -11,4 +11,11 @@
         c.strength = this.strength;
         return c;
     }
+    onDeath() {
+        log.write(this.name + " died.");
+    }
+    attackPC(pc: PlayerCharacter) {
+        pc.health -= this.strength;
+        pc.onDefend();
+    }
 }  

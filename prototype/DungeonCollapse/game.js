@@ -167,17 +167,21 @@ var Dungeon = (function () {
             if (this.cp.mappedTiles.indexOf(tile) == -1) {
                 this.cp.mapTile(tile);
             } else if (tile.character != null) {
+                // Combat!!!
                 if (tile.character.type == 'enemy') {
-                    //combat!!!
                     var enemy = tile.character;
-                    enemy.health -= character.strength;
-                    log.write(character.name + " hits " + enemy.name + " for " + character.strength);
-                    character.actionsLeft--;
+                    character.attackEnemy(enemy);
                     if (enemy.health <= 0) {
+                        enemy.onDeath();
                         tile.character = null;
                     } else {
-                        character.health -= enemy.strength;
-                        log.write(enemy.name + " hits " + character.name + " for " + enemy.strength);
+                        enemy.attackPC(character);
+                    }
+                } else if (tile.character.type == 'pc') {
+                    var other = tile.character;
+                    character.attackOpponent(other);
+                    if (other.health > 0) {
+                        other.attackOpponent(character);
                     }
                 }
             } else if (tile.passable) {
@@ -336,6 +340,13 @@ var Enemy = (function (_super) {
         c.strength = this.strength;
         return c;
     };
+    Enemy.prototype.onDeath = function () {
+        log.write(this.name + " died.");
+    };
+    Enemy.prototype.attackPC = function (pc) {
+        pc.health -= this.strength;
+        pc.onDefend();
+    };
     return Enemy;
 })(Character);
 var Grid = (function () {
@@ -457,6 +468,20 @@ var PlayerCharacter = (function (_super) {
         }
         tile.items = new Array();
     };
+    PlayerCharacter.prototype.attackEnemy = function (enemy) {
+        enemy.health -= this.strength;
+
+        //apply effects
+        this.actionsLeft--;
+        log.write(this.name + " hits " + enemy.name + " for " + this.strength);
+    };
+    PlayerCharacter.prototype.attackOpponent = function (opp) {
+        opp.health -= this.strength;
+
+        //apply effects
+        this.actionsLeft--;
+        log.write(this.name + " hits " + opp.name + " for " + this.strength);
+    };
     PlayerCharacter.prototype.mapTile = function (tile) {
         log.write(this.view + " mapped " + tile.posX + "," + tile.posY + " : " + tile.toString());
         this.actionsLeft--;
@@ -465,6 +490,8 @@ var PlayerCharacter = (function (_super) {
         this.actionsLeft = 2;
     };
     PlayerCharacter.prototype.onTurnEnd = function () {
+    };
+    PlayerCharacter.prototype.onDefend = function () {
     };
     PlayerCharacter.prototype.wait = function () {
         log.write(this.view + " waited");
