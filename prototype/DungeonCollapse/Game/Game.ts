@@ -9,11 +9,11 @@ class Game {
         this.element = element;        
     }
 
-    setup() {
-        
-        this.player1 = new Player(0,0,"1");
-        this.player2 = new Player(0, 12, "2");
-        this.currentDungeon = new Dungeon(7, 13, this.player1, this.player2);
+    setup() {        
+        this.player1 = new Player("ab");
+        this.player2 = new Player("12");
+        var map = new DungeonBuilder(18, 7, this.player1, this.player2).build();
+        this.currentDungeon = new Dungeon(this.player1, this.player2,map);
         this.currentPlayer = this.player1;
         var self = this;
         document.addEventListener('keydown', function (event) {
@@ -23,22 +23,16 @@ class Game {
     handleKey(keyCode: number) {
         var direction = -1;
         switch (keyCode) {
-            case 37: direction = 1; break;
-            case 38: direction =0; break;
-            case 39: direction = 3; break;
-            case 40: direction = 2; break;
+            case 37: direction = 0; break;
+            case 38: direction =1; break;
+            case 39: direction = 2; break;
+            case 40: direction = 3; break;
         }
-        if (direction >= 0) {
-            this.currentDungeon.movePlayer(this.currentPlayer, direction);
-            this.nextTurn();
-        }
+        this.currentDungeon.handleInput(direction);
+        this.draw();
     }
     draw() {
-        this.element.innerHTML = this.currentDungeon.toString(this.currentPlayer);
-    }
-    nextTurn() {
-        this.currentPlayer = this.currentPlayer === this.player1 ? this.player2 : this.player1;
-        this.draw();
+        this.element.innerHTML = this.currentDungeon.toString(this.currentDungeon.cp.mappedTiles);
     }
     start() {
         this.setup();
@@ -51,11 +45,13 @@ class Game {
 }
 
 var game: Game;
+var log: Log;
 enum Direction {LEFT, UP, RIGHT, DOWN };
 var directions = [{ x: -1, y: 0 },{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }];
 
 window.onload = () => {
-    var el = document.getElementById('content');
-    game = new Game(el);
+    game = new Game(document.getElementById('content'));
+    log = new Log(document.getElementById('devlog'));  
     game.start();
+  
 };
