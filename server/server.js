@@ -11,7 +11,6 @@ var DungeonCollapseServer = {
     numberOfClients: 0,
 
     init: function() {
-        console.log('Init server');
 
         var server = http.createServer(function (request, response) {});
         server.listen(1337, function () {});
@@ -25,41 +24,25 @@ var DungeonCollapseServer = {
          */
         wsServer.on("request", function (request) {
 
-            var connection = request.accept(null, request.origin);
-
-            var CLIENT_ID = DungeonCollapseServer.addClient(connection);
-
-            console.log('Nieuw client logged in: ' + CLIENT_ID);
-
-            connection.on("message", function(message) {
-
-                console.log('Connection message: ' + message + ' From client: ' + CLIENT_ID);
-                DungeonCollapseServer.receiveMessage(message, CLIENT_ID);
-            });
-
-            connection.on("close", function(connection) {
-                console.log('Connection closed');
-                DungeonCollapseServer.removeClient(CLIENT_ID);
-            });
+            DungeonCollapseServer.addClient(request);
 
         });
 
     },
 
     /**
-     * Adds a client to the game. Match it directly if a pending client is waiting.
-     * @param connection
-     * @return int the unique id of the client
+     * Adds a player to this.clients[].
+     * @param object the Websocket request
      */
-    addClient: function (connection) {
+    addClient: function(request) {
 
+        var connection = request.accept(null, request.origin);
         var CLIENT_ID = this.numberOfClients;
         this.numberOfClients++;
         var client = {
             CLIENT_ID: CLIENT_ID,
             CLIENT_OPPONENT_ID: 0,
-            connection: connection,
-            var1: Math.random() * 10000
+            connection: connection
         };
         if (this.pendingClients.length > 0) {
             // Match with waiting player
@@ -73,37 +56,66 @@ var DungeonCollapseServer = {
         else {
             this.pendingClients.push(client);
         }
-        return CLIENT_ID;
 
+        connection.on("message", function(message) {
+
+            console.log('Connection message: ' + message + ' From client: ' + CLIENT_ID);
+            DungeonCollapseServer.receiveMessage(message, CLIENT_ID);
+
+        });
+
+        connection.on("close", function(connection) {
+
+            console.log('Connection closed');
+            DungeonCollapseServer.removeClient(CLIENT_ID);
+
+        });
     },
 
     removeClient: function(CLIENT_ID) {
 
-        var message = JSON.stringify({message:'Opponent left'});
+        var OPPONENT_ID = this.clients[CLIENT_ID].CLIENT_OPPONENT_ID;
         this.clients[CLIENT_ID] = null;
-        //this.sendMessage(message, OPPONENT_ID);
+        if (OPPONENT_ID != 0) {
+            this.chat(OPPONENT_ID, 'Opponent left...');
+        }
 
     },
 
     /**
      * Receives and process a message from the server.
-     * @param message
-     * @param CLIENT_ID
+     * @param string message contains a JSON stringify object with at least a topic param
+     * @param int CLIENT_ID the id of the client that sent the message
      */
     receiveMessage: function (message, CLIENT_ID) {
 
         message = message.utf8Data;
         message = JSON.parse(message);
-        console.log('hier');
-        console.log(message.topic);
-        console.log(message.message);
-        console.log(CLIENT_ID);
-        var opponent = this.clients[CLIENT_ID].CLIENT_OPPONENT_ID;
-        console.log(opponent);
-        this.clients[opponent].connection.send(JSON.stringify({topic:message.topic,message:message.message}));
+
+        switch (message.topic) {
+            case 'chat':
+              DungeonCollapseServer.chat(
+                this.clients[CLIENT_ID].CLIENT_OPPONENT_ID,
+                message.message
+              );
+            break;
+        }
+
+    },
+
+    /**
+     * Sents a chat message to a client.
+     * @parem int CLIENT_ID the id of the receiver
+     * @param string message the message to send.
+     */
+    chat: function(CLIENT_ID, message) {
+
+        if (this.clients[CLIENT_ID] != null && message != '') {
+            return this.clients[CLIENT_ID].connection.send(JSON.stringify({topic:'chat',message:message}));
+        }
+        return false;
 
     }
-
 };
 
 DungeonCollapseServer.init();
