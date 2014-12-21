@@ -59,17 +59,16 @@ var DungeonCollapseServer = {
 
         connection.on("message", function(message) {
 
-            console.log('Connection message: ' + message + ' From client: ' + CLIENT_ID);
             DungeonCollapseServer.receiveMessage(message, CLIENT_ID);
 
         });
 
         connection.on("close", function(connection) {
 
-            console.log('Connection closed');
             DungeonCollapseServer.removeClient(CLIENT_ID);
 
         });
+
     },
 
     removeClient: function(CLIENT_ID) {
@@ -91,7 +90,6 @@ var DungeonCollapseServer = {
 
         message = message.utf8Data;
         message = JSON.parse(message);
-
         switch (message.topic) {
             case 'chat':
               DungeonCollapseServer.chat(
