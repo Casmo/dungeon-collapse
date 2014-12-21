@@ -4,28 +4,44 @@ var http = require("http");
 var DungeonCollapseServer = {
 
     /**
-     * Array with all connected clients
+     * Global settings for the server
+     */
+    settings: {
+        port: 1337
+    },
+
+    /**
+     * Array with all connected clients. Each client has the following objects:
+     * CLIENT_ID Int the id of itself and the key of the client array. @see numberOfClients
+     * CLIENT_OPPONENT_ID Int the id of the opponent (default 0)
+     * connection Object the websocket connection
+     */
+    clients: [],
+
+    /**
+     * Array with same informations as this.clients. After matching the pendingClient will
+     * be removed.
      */
     pendingClients: [],
-    clients: [],
+
+    /**
+     * Unique identifier for this.clients
+     */
     numberOfClients: 0,
 
+    /**
+     * Starts the server and start listening for incoming connections
+     */
     init: function() {
 
         var server = http.createServer(function (request, response) {});
-        server.listen(1337, function () {});
+        server.listen(this.settings.port, function () {});
 
         var wsServer = new WebSocketServer({
             httpServer: server
         });
-
-        /**
-         * Callback when player makes connection
-         */
         wsServer.on("request", function (request) {
-
             DungeonCollapseServer.addClient(request);
-
         });
 
     },
@@ -71,6 +87,10 @@ var DungeonCollapseServer = {
 
     },
 
+    /**
+     * Removes the client from the game and send messages to opponent
+     * @param CLIENT_ID
+     */
     removeClient: function(CLIENT_ID) {
 
         var OPPONENT_ID = this.clients[CLIENT_ID].CLIENT_OPPONENT_ID;
