@@ -95,11 +95,12 @@ var DungeonCollapseServer = {
         message = message.utf8Data;
         message = JSON.parse(message);
         console.log('hier');
-        console.log(message.clientX);
+        console.log(message.topic);
+        console.log(message.message);
         console.log(CLIENT_ID);
         var opponent = this.clients[CLIENT_ID].CLIENT_OPPONENT_ID;
         console.log(opponent);
-        this.clients[opponent].connection.send(JSON.stringify({clientX:message.clientX,clientY:message.clientY}));
+        this.clients[opponent].connection.send(JSON.stringify({topic:message.topic,message:message.message}));
 
     }
 
