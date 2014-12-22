@@ -1,0 +1,3 @@
+DungeonCollapse.Chat = {
+
+}

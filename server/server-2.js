@@ -1,7 +1,8 @@
 var WebSocketServer = require("websocket").server;
 var http = require("http");
+var DungeonCollapse = require('../shared/DungeonCollapse.js');
 
-var DungeonCollapseServer = {
+DungeonCollapse.Server = {
 
     /**
      * Global settings for the server
@@ -136,4 +137,4 @@ var DungeonCollapseServer = {
     }
 };
 
-DungeonCollapseServer.init();
+DungeonCollapse.Server.init();
