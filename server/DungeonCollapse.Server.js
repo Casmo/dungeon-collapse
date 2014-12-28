@@ -1,6 +1,5 @@
 /// <reference path="references.ts"/>
 var settings;
-
 var WebSocketServer = require("websocket").server;
 var http = require("http");
 
@@ -22,7 +21,7 @@ var DungeonCollapse;
             });
             wsServer.on("request", function (request) {
                 console.log(request);
-                DungeonCollapse.Server.addClient(request);
+                this.addClient(request);
             });
         }
         /**
@@ -32,8 +31,7 @@ var DungeonCollapse;
         */
         Server.prototype.addClient = function (request) {
             var connection = request.accept(null, request.origin);
-            var CLIENT_ID = this.numberOfClients;
-            this.numberOfClients++;
+            var CLIENT_ID = this.clients.length;
             var client = {
                 CLIENT_ID: CLIENT_ID,
                 CLIENT_OPPONENT_ID: 0,
@@ -41,11 +39,11 @@ var DungeonCollapse;
             };
 
             connection.on("message", function (message) {
-                DungeonCollapse.Server.receiveMessage(message, CLIENT_ID);
+                this.receiveMessage(message, CLIENT_ID);
             });
 
             connection.on("close", function (connection) {
-                DungeonCollapse.Server.removeClient(CLIENT_ID);
+                this.removeClient(CLIENT_ID);
             });
         };
 
@@ -74,4 +72,4 @@ var DungeonCollapse;
         return Server;
     })();
 })(DungeonCollapse || (DungeonCollapse = {}));
-//# sourceMappingURL=Server.js.map
+//# sourceMappingURL=DungeonCollapse.Server.js.map

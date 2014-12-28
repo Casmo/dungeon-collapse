@@ -1,6 +1,5 @@
 /// <reference path="references.ts"/>
 var settings:Settings;
-
 var WebSocketServer = require("websocket").server;
 var http = require("http");
 
@@ -35,7 +34,7 @@ module DungeonCollapse {
             });
             wsServer.on("request", function (request) {
                 console.log(request);
-                DungeonCollapse.Server.addClient(request);
+                this.addClient(request);
             });
 
         }
@@ -45,11 +44,10 @@ module DungeonCollapse {
          * @param object the Websocket request
          * @todo check with cookie if client already is in the list
          */
-        addClient(request:Object): void {
+        addClient(request:any): void {
 
             var connection = request.accept(null, request.origin);
-            var CLIENT_ID = this.numberOfClients;
-            this.numberOfClients++;
+            var CLIENT_ID = this.clients.length;
             var client = {
                 CLIENT_ID: CLIENT_ID,
                 CLIENT_OPPONENT_ID: 0,
@@ -58,13 +56,13 @@ module DungeonCollapse {
 
             connection.on("message", function(message) {
 
-                DungeonCollapse.Server.receiveMessage(message, CLIENT_ID);
+                this.receiveMessage(message, CLIENT_ID);
 
             });
 
             connection.on("close", function(connection) {
 
-                DungeonCollapse.Server.removeClient(CLIENT_ID);
+                this.removeClient(CLIENT_ID);
 
             });
 
@@ -85,7 +83,7 @@ module DungeonCollapse {
          * @param string message contains a JSON stringify object with at least a topic param
          * @param int CLIENT_ID the id of the client that sent the message
          */
-        receiveMessage(message:string, CLIENT_ID:number): void {
+        receiveMessage(message:any, CLIENT_ID:number): void {
 
             message = message.utf8Data;
             message = JSON.parse(message);
