@@ -5,7 +5,7 @@ var http = require("http");
 
 module DungeonCollapse {
 
-    class Server {
+    export class Server {
 
         /**
          * Array with all connected clients. Each client has the following objects:
@@ -34,7 +34,7 @@ module DungeonCollapse {
             });
             wsServer.on("request", function (request) {
                 console.log(request);
-                this.addClient(request);
+                super.addClient(request);
             });
 
         }
@@ -56,13 +56,13 @@ module DungeonCollapse {
 
             connection.on("message", function(message) {
 
-                this.receiveMessage(message, CLIENT_ID);
+                super.receiveMessage(message, CLIENT_ID);
 
             });
 
             connection.on("close", function(connection) {
 
-                this.removeClient(CLIENT_ID);
+                super.removeClient(CLIENT_ID);
 
             });
 

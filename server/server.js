@@ -1,3 +1,15 @@
+var Settings = (function () {
+    function Settings() {
+        this.port = 1337;
+    }
+    return Settings;
+})();
+/// <reference path="dts/node.d.ts"/>
+var DungeonCollapse;
+(function (DungeonCollapse) {
+    revision:
+    1;
+})(DungeonCollapse || (DungeonCollapse = {}));
 /// <reference path="references.ts"/>
 var settings;
 var WebSocketServer = require("websocket").server;
@@ -21,7 +33,7 @@ var DungeonCollapse;
             });
             wsServer.on("request", function (request) {
                 console.log(request);
-                this.addClient(request);
+                _super.prototype.addClient.call(this, request);
             });
         }
         /**
@@ -39,11 +51,11 @@ var DungeonCollapse;
             };
 
             connection.on("message", function (message) {
-                this.receiveMessage(message, CLIENT_ID);
+                _super.prototype.receiveMessage.call(this, message, CLIENT_ID);
             });
 
             connection.on("close", function (connection) {
-                this.removeClient(CLIENT_ID);
+                _super.prototype.removeClient.call(this, CLIENT_ID);
             });
         };
 
@@ -71,5 +83,35 @@ var DungeonCollapse;
         };
         return Server;
     })();
+    DungeonCollapse.Server = Server;
 })(DungeonCollapse || (DungeonCollapse = {}));
-//# sourceMappingURL=DungeonCollapse.Server.js.map
+/// <reference path="references.ts"/>
+var DungeonCollapse;
+(function (DungeonCollapse) {
+    var Chat = (function () {
+        function Chat() {
+        }
+        /**
+        * Sends a chat message to a client.
+        * @parem int CLIENT_ID the id of the receiver
+        * @param string message the message to send.
+        */
+        Chat.prototype.chat = function (CLIENT_ID, message) {
+            if (DungeonCollapse.Server.clients[CLIENT_ID] != null && message != '') {
+                if (DungeonCollapse.Server.clients[CLIENT_ID].connection.send(JSON.stringify({ topic: 'chat', message: message }))) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        return Chat;
+    })();
+    DungeonCollapse.Chat = Chat;
+})(DungeonCollapse || (DungeonCollapse = {}));
+/// <reference path="Settings.ts"/>
+/// <reference path="../shared/DungeonCollapse.ts"/>
+/// <reference path="DungeonCollapse.Server.ts"/>
+/// <reference path="DungeonCollapse.Chat.ts"/>
+/// <reference path="references.ts"/>
+var server = new DungeonCollapse.Server();
+//# sourceMappingURL=server.js.map
