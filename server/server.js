@@ -22,18 +22,19 @@ var DungeonCollapse;
         * Starts the server and start listening for incoming connections
         */
         function Server() {
-            settings = new Settings();
+            var self = this;
+            this.settings = new Settings();
+            this.cients = [];
             var server = http.createServer(function (request, response) {
             });
-            server.listen(settings.port, function () {
+            server.listen(this.settings.port, function () {
             });
 
             var wsServer = new WebSocketServer({
                 httpServer: server
             });
             wsServer.on("request", function (request) {
-                console.log(request);
-                _super.prototype.addClient.call(this, request);
+                self.addClient(request);
             });
         }
         /**
@@ -46,16 +47,15 @@ var DungeonCollapse;
             var CLIENT_ID = this.clients.length;
             var client = {
                 CLIENT_ID: CLIENT_ID,
-                CLIENT_OPPONENT_ID: 0,
                 connection: connection
             };
 
             connection.on("message", function (message) {
-                _super.prototype.receiveMessage.call(this, message, CLIENT_ID);
+                DungeonCollapse.Server.receiveMessage(message, CLIENT_ID);
             });
 
             connection.on("close", function (connection) {
-                _super.prototype.removeClient.call(this, CLIENT_ID);
+                DungeonCollapse.Server.removeClient(CLIENT_ID);
             });
         };
 

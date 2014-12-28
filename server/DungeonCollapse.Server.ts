@@ -7,6 +7,7 @@ module DungeonCollapse {
 
     export class Server {
 
+        settings: Settings;
         /**
          * Array with all connected clients. Each client has the following objects:
          * CLIENT_ID Int the id of itself and the key of the client array. @see numberOfClients
@@ -25,16 +26,17 @@ module DungeonCollapse {
          */
         constructor() {
 
-            settings = new Settings();
+            var self = this;
+            this.settings = new Settings();
+            this.cients = [];
             var server = http.createServer(function (request, response) {});
-            server.listen(settings.port, function () {});
+            server.listen(this.settings.port, function () {});
 
             var wsServer = new WebSocketServer({
                 httpServer: server
             });
             wsServer.on("request", function (request) {
-                console.log(request);
-                super.addClient(request);
+                self.addClient(request);
             });
 
         }
@@ -50,19 +52,18 @@ module DungeonCollapse {
             var CLIENT_ID = this.clients.length;
             var client = {
                 CLIENT_ID: CLIENT_ID,
-                CLIENT_OPPONENT_ID: 0,
                 connection: connection
             };
 
             connection.on("message", function(message) {
 
-                super.receiveMessage(message, CLIENT_ID);
+                DungeonCollapse.Server.receiveMessage(message, CLIENT_ID);
 
             });
 
             connection.on("close", function(connection) {
 
-                super.removeClient(CLIENT_ID);
+                DungeonCollapse.Server.removeClient(CLIENT_ID);
 
             });
 
