@@ -1,4 +1,4 @@
-/// <reference path="references.ts"/>
+/// <reference path="DungeonCollapse.Server.ts"/>
 
 module DungeonCollapse {
 
