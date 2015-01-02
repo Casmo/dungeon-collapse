@@ -11,21 +11,55 @@
 
     <script>
 
-        var socket = new WebSocket("ws://localhost:1337");
+        var connected = false;
+        var socket = null;
+
+        function connect() {
+
+            if (connected) {
+                return true;
+            }
+            socket = new WebSocket("ws://localhost:1337");
+
+            socket.onmessage = function (event) {
+                var data = JSON.parse(event.data);
+                console.log(data);
+                document.getElementById('topic').innerHTML = data.topic;
+                document.getElementById('message').innerHTML += '<p><strong>'+ data.name +':</strong><br />' + data.message + '</p>';
+            };
+
+            socket.onclose = function(event) {
+
+                document.getElementById('message').innerHTML += '<p>You disconnected. <a href="#reconnect" onclick="connect();">Reconnect?</a></p>';
+                connected = false;
+
+            };
+
+            return true;
+
+        }
+
+        function chat(message) {
+            if (socket == null) {
+                return false;
+            }
+            socket.send(JSON.stringify({topic:'chat',message:message}));
+        }
 
         document.getElementById('chat').addEventListener ("keydown", function (event) {
             if (event.keyCode == 13) {
                 var message = document.getElementById('chat').value;
-                document.getElementById('chat').value = '';
-               socket.send(JSON.stringify({topic:'chat',message:message}));
-                document.getElementById('message').innerHTML += '<p><strong>You:</strong><br />' + message + '</p>';
+                if (chat(message)) {
+                    document.getElementById('chat').value = '';
+                    document.getElementById('message').innerHTML += '<p><strong>You:</strong><br />' + message + '</p>';
+                }
+                else {
+                    document.getElementById('message').innerHTML += '<p>Cannot chat at the moment. Are you <a href="#reconnect" onclick="connect();">connected</a>?</p>';
+                }
+
             }
         }, false);
-        socket.onmessage = function (event) {
-            var data = JSON.parse(event.data);
-            document.getElementById('topic').innerHTML = data.topic;
-            document.getElementById('message').innerHTML += '<p><strong>Stranger:</strong><br />' + data.message + '</p>';
-        }
+
     </script>
     </body>
 </html>
