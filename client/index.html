@@ -2,8 +2,24 @@
 <html>
     <head>
         <meta charset="utf-8" />
+        <title>DungeonCollapse client</title>
+        <link rel="stylesheet" href="css/bootstrap.min.css" />
+        <link rel="stylesheet" href="css/default.css" />
+        <script src="js/lib/dom.js"></script>
     </head>
     <body>
+    <div class="container-fluid">
+        <div class="row top-buffer">
+            <div class="col-xs-8">
+                <a class="btn btn-primary" onclick="connect();">Connect</a>
+                <a class="btn btn-default" onclick="disconnect();">Disconnect</a>
+            </div>
+            <div class="col-xs-4">
+                <strong>Socket status:</strong>
+                <span id="connection-status">...</span>
+            </div>
+        </div>
+    </div>
     <h1>Websocket</h1>
     Server topic: <span id="topic">Topic</span><br />
     <div id="message"></div>
@@ -16,22 +32,42 @@
 
         function connect() {
 
-            if (connected) {
+            /**
+             *
+             CONNECTING 	0 	The connection is not yet open.
+             OPEN 	1 	The connection is open and ready to communicate.
+             CLOSING 	2 	The connection is in the process of closing.
+             CLOSED 	3 	The connection is closed or couldn't be opened.
+             */
+            if (socket != null && (socket.readyState == 2 || socket.readyState == 1)) {
                 return true;
             }
             socket = new WebSocket("ws://localhost:1337");
 
             socket.onmessage = function (event) {
                 var data = JSON.parse(event.data);
-                console.log(data);
-                document.getElementById('topic').innerHTML = data.topic;
-                document.getElementById('message').innerHTML += '<p><strong>'+ data.name +':</strong><br />' + data.message + '</p>';
+                $('#connection-status').innerHTML = 'Message received';
+                $('#topic').innerHTML = data.topic;
+                $('#message').innerHTML += '<p><strong>'+ data.name +':</strong><br />' + data.message + '</p>';
+            };
+
+            socket.onopen = function (event) {
+
+                connected = true;
+                $('#connection-status').innerHTML = 'Connection open';
+
             };
 
             socket.onclose = function(event) {
 
-                document.getElementById('message').innerHTML += '<p>You disconnected. <a href="#reconnect" onclick="connect();">Reconnect?</a></p>';
                 connected = false;
+                $('#connection-status').innerHTML = 'Connection closed';
+
+            };
+
+            socket.onerror = function(event) {
+
+                $('#connection-status').innerHTML = 'Websocket error';
 
             };
 
@@ -39,22 +75,30 @@
 
         }
 
+        function disconnect() {
+
+            if (socket != null) {
+                socket.close();
+            }
+
+        }
+
         function chat(message) {
-            if (socket == null) {
+            if (socket == null || socket.readyState != 1) {
                 return false;
             }
             socket.send(JSON.stringify({topic:'chat',message:message}));
             return true;
         }
 
-        document.getElementById('chat').addEventListener ("keydown", function (event) {
+        $('#chat').addEventListener ("keydown", function (event) {
             if (event.keyCode == 13) {
-                var message = document.getElementById('chat').value;
+                var message = $('#chat').value;
                 if (chat(message)) {
-                    document.getElementById('chat').value = '';
+                    $('#chat').value = '';
                 }
                 else {
-                    document.getElementById('message').innerHTML += '<p>Cannot chat at the moment. Are you <a href="#reconnect" onclick="connect();">connected</a>?</p>';
+                    $('#message').innerHTML += '<p>Cannot chat at the moment. Are you <a href="#reconnect" onclick="connect();">connected</a>?</p>';
                 }
 
             }

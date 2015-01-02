@@ -3,16 +3,15 @@ var http = require("http");
 
 DungeonCollapse.Server = {
 
-    // Call parent: DugneonCollapse.ServerParent.call(this);
     settings: {
         port: 1337
     },
 
     /**
-     * Array with all connected clients. Each client has the following objects:
-     * CLIENT_ID Int the id of itself and the key of the client array. @see numberOfClients
-     * CLIENT_OPPONENT_ID Int the id of the opponent (default 0)
-     * connection Object the websocket connection
+     * Array with all connected clients. Each client has the following attributes:
+     * @attribute name string The name/nick of the client
+     * @attribute connection Object: The request connection object
+     * @attribute connected boolean whether the player is connected or not
      */
     clients: [],
 
