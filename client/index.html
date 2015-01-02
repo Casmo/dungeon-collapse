@@ -5,8 +5,8 @@
     </head>
     <body>
     <h1>Websocket</h1>
-    <h1 id="topic"></h1>
-    <p id="message"></p>
+    Server topic: <span id="topic">Topic</span><br />
+    <div id="message"></div>
     <input id="chat" placeholder="Chat..." />
 
     <script>
@@ -44,6 +44,7 @@
                 return false;
             }
             socket.send(JSON.stringify({topic:'chat',message:message}));
+            return true;
         }
 
         document.getElementById('chat').addEventListener ("keydown", function (event) {
@@ -51,7 +52,6 @@
                 var message = document.getElementById('chat').value;
                 if (chat(message)) {
                     document.getElementById('chat').value = '';
-                    document.getElementById('message').innerHTML += '<p><strong>You:</strong><br />' + message + '</p>';
                 }
                 else {
                     document.getElementById('message').innerHTML += '<p>Cannot chat at the moment. Are you <a href="#reconnect" onclick="connect();">connected</a>?</p>';
